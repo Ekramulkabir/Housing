@@ -1,1 +1,43 @@
-# draftfile
+# Stanford Research Park — Transit Fee Dashboard (Revision 3)
+
+## Included
+- `portfolio-transit.html`: single self-contained HTML page (except external Tableau Extensions API SDK), with Excel snapshot of SRP records.
+- `transit-summary.trex`: displays three top cards: Direct Owned, Ground Leased, and Combined Total, each with property counts, annual transit fee totals, and FY27-vs-FY26 year-over-year change.
+- `transit-inspector.trex`: displays the right-hand property inspector, FY26/FY27 transit fee values and property YoY percentage, search, ownership filters, and a Tableau map selection listener.
+- `stanford_transit_dashboard_v3.html`: separate full-screen local design preview provided with the package link, containing the *original Tableau map screenshot* (not a live map).
+
+## Excel data grounding
+- Source: `Portfolio Information Transit.xlsx`, SRP portfolio only, 82 source rows.
+- Direct Owned: 7 properties; FY26 transit fees $260,703.60; FY27 $267,474.71.
+- Ground Leased: 28 properties; FY26 transit fees $1,541,729.30; FY27 $1,587,981.18.
+- Another 47 SRP records have missing ownership type and fee values. These are searchable under **All SRP** but not included in the reported ownership totals.
+- Values formatted as USD (user clarified they are transit fees). Totals are rounded for display to nearest dollar, and sum from numeric source cells before rounding.
+
+## YoY calculations
+- **YoY % = (FY27 transit fee − FY26 transit fee) / FY26 transit fee × 100**.
+- Direct Owned: +2.60%; Ground Leased: +3.00%; Combined Total: +2.94%.
+- Combined Total = Direct Owned + Ground Leased, excluding records without a fee/ownership classification.
+- Year switch changes the displayed fee amount, but YoY is always labeled FY27 vs FY26.
+- The figures are workbook transit fee amounts, not independently verified cash receipts.
+
+## Hosting and deployment on Tableau Server
+1. Host `portfolio-transit.html` on a Stanford-approved internal **HTTPS** host reachable by user browsers. Do not publish the data to a public GitHub Pages site.
+2. Replace `https://YOUR_APPROVED_INTERNAL_HOST/` in **both** `.trex` manifests with your hosted path. Keep their query parameters `?mode=summary` and `?mode=inspector`.
+3. In `portfolio-transit.html`, change `PARCEL_MAP_WORKSHEET_NAME` to the **exact** Tableau worksheet name used by the SRP parcel map. This is strongly recommended; if unconfigured, the starter listens to all worksheets.
+4. Ensure the Tableau map worksheet has `[Yardi]` on **Marks > Detail** with values matching the uploaded Excel codes; or use `[Property Address]` with matching text.
+5. In Tableau Desktop, create a tiled dashboard layout: **top row** summary extension (`transit-summary.trex`) above **bottom row** with existing Tableau map on the left and inspector extension (`transit-inspector.trex`) on the right.
+6. Publish to Tableau Server and ask the Tableau Server admin to enable/allowlist these dashboard extensions according to your org's policy.
+7. Test selecting a map parcel. The right inspector should update, displaying the property's ownership type and fee values.
+
+## Notes/limits
+- The dashboard preview uses a *static screenshot* of the map. For a true interactive map, preserve the existing Tableau worksheet alongside the two extension objects.
+- HTML property search and ownership pills currently filter the **inspector list only**, not Tableau map marks. Selecting a parcel on the Tableau map updates the inspector (one-way). A bidirectional workflow can be added separately using supported Tableau worksheet APIs.
+- All three top totals are portfolio-level SRP totals, not affected by local HTML search or list filters.
+- The HTML embeds a **snapshot** of the uploaded workbook. To keep totals in sync with live Tableau/Excel refreshes, connect the HTML to a Tableau aggregated summary worksheet or approved internal data endpoint.
+- The year switch changes the top card totals and the preview property-list fee column; the inspector always shows both FY26/FY27 values.
+- The packaged HTML uses the Tableau Extensions API SDK from a third-party CDN. For production, vendor an approved local SDK copy and update the `<script src>` to avoid external dependencies.
+- Tableau authentication and permissions continue to apply. Extension hosting must comply with Stanford data handling requirements.
+
+Docs:
+- https://tableau.github.io/extensions-api/docs/dashext/trex_overview/
+- https://help.tableau.com/current/server/en-us/dashboard_extensions.htm
